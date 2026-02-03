@@ -1,0 +1,110 @@
+<div class="container-fluid mt-3">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-user-md me-2"></i>Dashboard Médecin
+          </h4>
+          <div>
+            <button class="btn btn-primary me-2" (click)="openStreamlit()" [disabled]="loading">
+              <i class="fas fa-external-link-alt me-1"></i>
+              <span *ngIf="!loading">Ouvrir Streamlit</span>
+              <span *ngIf="loading">
+                <i class="fas fa-spinner fa-spin me-1"></i>Chargement...
+              </span>
+            </button>
+            <button class="btn btn-outline-danger" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Bienvenue -->
+          <div class="alert alert-info">
+            <h5 class="alert-heading">Bienvenue Dr. {{currentUser?.lastName}}</h5>
+            <p class="mb-0">
+              Vous pouvez accéder à l'interface avancée d'analyse médicale en cliquant sur "Ouvrir Streamlit".
+              Cette interface vous permet d'analyser des images histologiques et de générer des diagnostics assistés par IA.
+            </p>
+          </div>
+
+          <!-- Accès Streamlit -->
+          <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+              <div class="card">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">
+                    <i class="fas fa-brain me-2"></i>Interface IA Médicale
+                  </h5>
+                </div>
+                <div class="card-body text-center">
+                  <div class="mb-3">
+                    <i class="fas fa-robot fa-4x text-primary mb-3"></i>
+                    <h4>MedInsight AI Dashboard</h4>
+                    <p class="text-muted">
+                      Interface complète d'analyse médicale avec intelligence artificielle
+                    </p>
+                  </div>
+                  
+                  <button class="btn btn-lg btn-success mb-3" (click)="openStreamlit()" [disabled]="loading">
+                    <i class="fas fa-play-circle me-2"></i>
+                    <span *ngIf="!loading">Lancer l'interface Streamlit</span>
+                    <span *ngIf="loading">
+                      <i class="fas fa-spinner fa-spin me-2"></i>Préparation...
+                    </span>
+                  </button>
+
+                  <div class="alert alert-warning">
+                    <small>
+                      <i class="fas fa-exclamation-triangle me-1"></i>
+                      L'interface Streamlit s'ouvrira dans un nouvel onglet. 
+                      Assurez-vous que votre navigateur autorise les popups.
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fonctionnalités -->
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-microscope fa-3x text-primary mb-3"></i>
+                  <h5>Analyse d'images</h5>
+                  <p class="text-muted">
+                    Analyse avancée d'images histopathologiques
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-dna fa-3x text-success mb-3"></i>
+                  <h5>Analyse génomique</h5>
+                  <p class="text-muted">
+                    Prédiction du risque de rechute
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-pills fa-3x text-info mb-3"></i>
+                  <h5>Recommandations</h5>
+                  <p class="text-muted">
+                    Traitements personnalisés basés sur l'IA
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

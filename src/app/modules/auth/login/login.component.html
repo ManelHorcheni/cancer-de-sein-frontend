@@ -1,0 +1,98 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">
+            <i class="fas fa-user-md me-2"></i>MedInsight Connexion
+          </h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                formControlName="email"
+                placeholder="votre@email.com"
+                [class.is-invalid]="submitted && f['email'].errors">
+              <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                <div *ngIf="f['email'].errors['required']">Email requis</div>
+                <div *ngIf="f['email'].errors['email']">Email invalide</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Mot de passe</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="password" 
+                formControlName="password"
+                [class.is-invalid]="submitted && f['password'].errors">
+              <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+                Mot de passe requis
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mb-3">
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="loading">
+                <span *ngIf="!loading">Se connecter</span>
+                <span *ngIf="loading">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Connexion...
+                </span>
+              </button>
+            </div>
+
+            <!-- Après le formulaire de login -->
+<div class="text-center mt-3">
+  <p class="mb-0">
+    Nouveau sur MedInsight ? 
+    <a routerLink="/auth/register" class="text-decoration-none">
+      Créer un compte
+    </a>
+  </p>
+</div>
+
+            <div class="text-center">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Utilisez vos identifiants MedInsight
+              </small>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <small class="text-muted">
+            Version 2.0 • © 2024 MedInsight
+          </small>
+        </div>
+      </div>
+
+      <!-- Comptes de démonstration -->
+      <div class="card mt-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">Comptes de démonstration</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 mb-2">
+              <small><strong>Admin:</strong> admin@medinsight.com / Admin123!</small>
+            </div>
+            <div class="col-12 mb-2">
+              <small><strong>Médecin:</strong> doctor@medinsight.com / Doctor123!</small>
+            </div>
+            <div class="col-12">
+              <small><strong>Patient:</strong> patient@medinsight.com / Patient123!</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

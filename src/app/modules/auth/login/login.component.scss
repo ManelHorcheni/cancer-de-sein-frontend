@@ -1,0 +1,29 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  border: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: linear-gradient(to right, #3498db, #2980b9);
+}
+
+.btn-primary {
+  background: linear-gradient(to right, #3498db, #2980b9);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #2980b9, #1c6ea4);
+}
+
+.demo-accounts {
+  border-left: 4px solid #3498db;
+}

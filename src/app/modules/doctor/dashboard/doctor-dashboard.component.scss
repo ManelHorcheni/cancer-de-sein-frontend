@@ -1,0 +1,30 @@
+.feature-card {
+  transition: all 0.3s;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  }
+  
+  i {
+    color: #3498db;
+  }
+}
+
+.btn-success {
+  background: linear-gradient(to right, #27ae60, #219653);
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  
+  &:hover {
+    background: linear-gradient(to right, #219653, #1e8449);
+  }
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}

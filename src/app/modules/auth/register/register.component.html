@@ -1,0 +1,169 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">
+            <i class="fas fa-user-plus me-2"></i>Créer un compte MedInsight
+          </h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Informations personnelles -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="firstName" class="form-label">Prénom *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="firstName" 
+                  formControlName="firstName"
+                  [class.is-invalid]="submitted && f['firstName'].errors">
+                <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
+                  <div *ngIf="f['firstName'].errors['required']">Prénom requis</div>
+                  <div *ngIf="f['firstName'].errors['minlength']">
+                    Minimum 2 caractères
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="lastName" class="form-label">Nom *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="lastName" 
+                  formControlName="lastName"
+                  [class.is-invalid]="submitted && f['lastName'].errors">
+                <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
+                  <div *ngIf="f['lastName'].errors['required']">Nom requis</div>
+                  <div *ngIf="f['lastName'].errors['minlength']">
+                    Minimum 2 caractères
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email *</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                formControlName="email"
+                placeholder="exemple@email.com"
+                [class.is-invalid]="submitted && f['email'].errors">
+              <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                <div *ngIf="f['email'].errors['required']">Email requis</div>
+                <div *ngIf="f['email'].errors['email']">Email invalide</div>
+              </div>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="password" class="form-label">Mot de passe *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="password" 
+                  formControlName="password"
+                  [class.is-invalid]="submitted && f['password'].errors">
+                <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+                  <div *ngIf="f['password'].errors['required']">Mot de passe requis</div>
+                  <div *ngIf="f['password'].errors['minlength']">
+                    Minimum 6 caractères
+                  </div>
+                </div>
+                <small class="form-text text-muted">Minimum 6 caractères</small>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="confirmPassword" class="form-label">Confirmer le mot de passe *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmPassword" 
+                  formControlName="confirmPassword"
+                  [class.is-invalid]="(submitted && f['confirmPassword'].errors) || registerForm.hasError('mismatch')">
+                <div *ngIf="registerForm.hasError('mismatch') && f['confirmPassword'].touched" 
+                     class="invalid-feedback">
+                  Les mots de passe ne correspondent pas
+                </div>
+              </div>
+            </div>
+
+            <!-- Rôle -->
+            <div class="mb-3">
+              <label for="role" class="form-label">Je suis *</label>
+              <select 
+                class="form-select" 
+                id="role" 
+                formControlName="role"
+                [class.is-invalid]="submitted && f['role'].errors">
+                <option *ngFor="let role of roles" [value]="role.value">
+                  {{role.label}}
+                </option>
+              </select>
+            </div>
+
+            <!-- Téléphone -->
+            <div class="mb-3">
+              <label for="phone" class="form-label">Téléphone</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                id="phone" 
+                formControlName="phone"
+                placeholder="+212 600 000 000">
+            </div>
+
+            <!-- Adresse -->
+            <div class="mb-3">
+              <label for="address" class="form-label">Adresse</label>
+              <textarea 
+                class="form-control" 
+                id="address" 
+                formControlName="address"
+                rows="2"
+                placeholder="Votre adresse complète"></textarea>
+            </div>
+
+            <!-- Boutons -->
+            <div class="d-grid gap-2 mb-3">
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="loading">
+                <span *ngIf="!loading">
+                  <i class="fas fa-user-plus me-1"></i>S'inscrire
+                </span>
+                <span *ngIf="loading">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Inscription...
+                </span>
+              </button>
+              
+              <a routerLink="/auth/login" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-in-alt me-1"></i>Déjà un compte ? Se connecter
+              </a>
+            </div>
+
+            <div class="text-center">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Les champs marqués d'un * sont obligatoires
+              </small>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <small class="text-muted">
+            Version 2.0 • © 2024 MedInsight
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
