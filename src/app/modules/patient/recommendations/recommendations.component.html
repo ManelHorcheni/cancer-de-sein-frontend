@@ -1,0 +1,280 @@
+<div class="container-fluid mt-3">
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0">
+              <i class="fas fa-lightbulb me-2"></i>Mes Recommandations
+            </h4>
+            <small class="opacity-75">
+              Conseils personnalisés pour votre santé
+            </small>
+          </div>
+          <div>
+            <button class="btn btn-light btn-sm" routerLink="/patient/dashboard">
+              <i class="fas fa-arrow-left me-1"></i> Retour
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-primary h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.total }}</div>
+          <div class="text-muted small">Total</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-warning h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.pending }}</div>
+          <div class="text-muted small">En attente</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-success h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.completed }}</div>
+          <div class="text-muted small">Terminées</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-danger h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.urgent }}</div>
+          <div class="text-muted small">Urgentes</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-info h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.fromAI }}</div>
+          <div class="text-muted small">De l'IA</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6 mb-3">
+      <div class="card border-left-secondary h-100">
+        <div class="card-body text-center">
+          <div class="h2 mb-0">{{ stats.fromDoctor }}</div>
+          <div class="text-muted small">Du médecin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres et actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Statut</label>
+              <select class="form-select form-select-sm" [(ngModel)]="filterType" (change)="onFilterChange()">
+                <option value="all">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="completed">Terminées</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Priorité</label>
+              <select class="form-select form-select-sm" [(ngModel)]="filterPriority" (change)="onFilterChange()">
+                <option value="all">Toutes priorités</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">Élevée</option>
+                <option value="medium">Moyenne</option>
+                <option value="low">Faible</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Source</label>
+              <select class="form-select form-select-sm" [(ngModel)]="filterSource" (change)="onFilterChange()">
+                <option value="all">Toutes sources</option>
+                <option value="ai">Intelligence Artificielle</option>
+                <option value="doctor">Médecin</option>
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="d-flex gap-2 w-100">
+                <button class="btn btn-sm btn-outline-secondary flex-grow-1" (click)="resetFilters()">
+                  <i class="fas fa-times me-1"></i>Réinitialiser
+                </button>
+                <button class="btn btn-sm btn-success" (click)="markAllAsCompleted()" [disabled]="stats.pending === 0">
+                  <i class="fas fa-check-double me-1"></i>Tout terminer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des recommandations -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">
+            <i class="fas fa-list-check me-1"></i>
+            Recommandations ({{ filteredRecommendations.length }})
+          </h6>
+          <div class="text-muted small">
+            {{ filteredRecommendations.length }} résultat(s)
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Chargement des recommandations...</p>
+          </div>
+
+          <div *ngIf="!loading && filteredRecommendations.length === 0" class="text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune recommandation ne correspond aux filtres</p>
+            <button class="btn btn-sm btn-outline-primary" (click)="resetFilters()">
+              Réinitialiser les filtres
+            </button>
+          </div>
+
+          <div *ngIf="!loading && filteredRecommendations.length > 0">
+            <div class="row">
+              <div *ngFor="let rec of filteredRecommendations" class="col-lg-6 mb-4">
+                <div class="card h-100 border" [ngClass]="{
+                  'border-success': rec.completed,
+                  'border-warning': !rec.completed && rec.priority === 'HIGH',
+                  'border-danger': !rec.completed && rec.priority === 'URGENT'
+                }">
+                  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                      <i [class]="getTypeIcon(rec.type) + ' me-2 text-primary'"></i>
+                      <h6 class="mb-0">{{ rec.title }}</h6>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge" [ngClass]="getPriorityClass(rec.priority)">
+                        {{ getPriorityText(rec.priority) }}
+                      </span>
+                      <span class="badge" [ngClass]="rec.source === 'AI' ? 'bg-secondary' : 'bg-info'">
+                        {{ rec.source === 'AI' ? 'IA' : 'Médecin' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <p class="mb-2">{{ rec.description }}</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                      <div class="col-6">
+                        <small class="text-muted d-block">Catégorie</small>
+                        <strong>{{ getTypeText(rec.type) }}</strong>
+                      </div>
+                      <div class="col-6">
+                        <small class="text-muted d-block">Créée le</small>
+                        <strong>{{ rec.createdDate | date:'dd/MM/yyyy' }}</strong>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-6">
+                        <small class="text-muted d-block">Échéance</small>
+                        <strong [ngClass]="getDueDateClass(rec.dueDate)">
+  {{ rec.dueDate | date:'dd/MM/yyyy' }}
+  <span *ngIf="!rec.completed" class="small">
+    ({{ getDaysRemaining(rec.dueDate) > 0 ? 'dans ' + getDaysRemaining(rec.dueDate) + ' jours' : 
+        getDaysRemaining(rec.dueDate) === 0 ? 'aujourd\'hui' : 'échéance dépassée' }})
+  </span>
+</strong>
+                      </div>
+                      <div class="col-6">
+                        <small class="text-muted d-block">Progression</small>
+                        <div class="d-flex align-items-center">
+                          <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                            <div class="progress-bar" [ngClass]="rec.completed ? 'bg-success' : 'bg-warning'" 
+                                  [style.width]="rec.completed ? '100%' : '50%'"></div>
+                          </div>
+                          <span class="small">{{ rec.completed ? '100%' : '50%' }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               [id]="'rec-' + rec.id"
+                               [checked]="rec.completed"
+                               (change)="toggleRecommendationStatus(rec)">
+                        <label class="form-check-label small" [for]="'rec-' + rec.id">
+                          {{ rec.completed ? 'Terminée' : 'Marquer comme terminée' }}
+                        </label>
+                      </div>
+                      <div>
+                        <button class="btn btn-sm btn-outline-primary" [disabled]="true">
+                          <i class="fas fa-info-circle me-1"></i>Détails
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guide des priorités -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Guide des priorités</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-danger me-2">Urgent</span>
+                <small class="text-muted">À faire dans les 24 heures</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-warning me-2">Élevée</span>
+                <small class="text-muted">À faire dans la semaine</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-info me-2">Moyenne</span>
+                <small class="text-muted">À faire dans le mois</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-secondary me-2">Faible</span>
+                <small class="text-muted">À faire quand possible</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,10 +9,15 @@ export class AuthGuard implements CanActivate {
   
   constructor(
     private router: Router,
-    private authService: AuthService
+    //private authService: AuthService
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    // TEMPORAIREMENT : Toujours autoriser l'accès pour les tests
+    console.log('AuthGuard: Accès autorisé temporairement');
+    return true;
+
+  /* canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (this.authService.isLoggedIn()) {
       // Vérifier le rôle requis
       const requiredRole = route.data['role'];
@@ -43,5 +48,5 @@ export class AuthGuard implements CanActivate {
       queryParams: { returnUrl: state.url } 
     });
     return false;
-  }
-}
+  } */
+}}

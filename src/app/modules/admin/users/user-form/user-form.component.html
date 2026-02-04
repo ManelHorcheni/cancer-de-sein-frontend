@@ -1,0 +1,258 @@
+<div class="container-fluid mt-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-user-plus me-2"></i>{{ getTitle() }}
+          </h4>
+          <button class="btn btn-light btn-sm" (click)="onCancel()">
+            <i class="fas fa-times me-1"></i> Annuler
+          </button>
+        </div>
+
+        <div class="card-body">
+          <!-- Indication mode édition -->
+          <div *ngIf="isEditMode" class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            Mode édition. Laissez les champs mot de passe vides pour ne pas les modifier.
+          </div>
+
+          <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Informations personnelles -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="firstName" class="form-label">
+                  Prénom <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="firstName" 
+                  formControlName="firstName"
+                  [class.is-invalid]="f['firstName'].invalid && f['firstName'].touched"
+                  placeholder="Ex: Jean">
+                <div *ngIf="f['firstName'].invalid && f['firstName'].touched" class="invalid-feedback">
+                  <div *ngIf="f['firstName'].errors?.['required']">Le prénom est requis</div>
+                  <div *ngIf="f['firstName'].errors?.['minlength']">
+                    Le prénom doit contenir au moins 2 caractères
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="lastName" class="form-label">
+                  Nom <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="lastName" 
+                  formControlName="lastName"
+                  [class.is-invalid]="f['lastName'].invalid && f['lastName'].touched"
+                  placeholder="Ex: Martin">
+                <div *ngIf="f['lastName'].invalid && f['lastName'].touched" class="invalid-feedback">
+                  <div *ngIf="f['lastName'].errors?.['required']">Le nom est requis</div>
+                  <div *ngIf="f['lastName'].errors?.['minlength']">
+                    Le nom doit contenir au moins 2 caractères
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                Email <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                formControlName="email"
+                [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                placeholder="exemple@medinsight.com">
+              <div *ngIf="f['email'].invalid && f['email'].touched" class="invalid-feedback">
+                <div *ngIf="f['email'].errors?.['required']">L'email est requis</div>
+                <div *ngIf="f['email'].errors?.['email']">Email invalide</div>
+              </div>
+            </div>
+
+            <!-- Mot de passe (seulement pour création ou si modification) -->
+            <div *ngIf="!isEditMode" class="row">
+              <div class="col-md-6 mb-3">
+                <label for="password" class="form-label">
+                  Mot de passe <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="password" 
+                  formControlName="password"
+                  [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                  placeholder="••••••••">
+                <div *ngIf="f['password'].invalid && f['password'].touched" class="invalid-feedback">
+                  <div *ngIf="f['password'].errors?.['required']">Le mot de passe est requis</div>
+                  <div *ngIf="f['password'].errors?.['minlength']">
+                    Minimum 6 caractères
+                  </div>
+                </div>
+                <small class="form-text text-muted">Minimum 6 caractères</small>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="confirmPassword" class="form-label">
+                  Confirmer le mot de passe <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmPassword" 
+                  formControlName="confirmPassword"
+                  [class.is-invalid]="(f['confirmPassword'].invalid && f['confirmPassword'].touched) || userForm.hasError('mismatch')"
+                  placeholder="••••••••">
+                <div *ngIf="f['confirmPassword'].invalid && f['confirmPassword'].touched" class="invalid-feedback">
+                  <div *ngIf="f['confirmPassword'].errors?.['required']">La confirmation est requise</div>
+                </div>
+                <div *ngIf="userForm.hasError('mismatch') && f['confirmPassword'].touched" class="invalid-feedback d-block">
+                  Les mots de passe ne correspondent pas
+                </div>
+              </div>
+            </div>
+
+            <!-- Pour l'édition, afficher une option pour changer le mot de passe -->
+            <div *ngIf="isEditMode" class="row">
+              <div class="col-md-6 mb-3">
+                <label for="password" class="form-label">
+                  Nouveau mot de passe (optionnel)
+                </label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="password" 
+                  formControlName="password"
+                  placeholder="Laissez vide pour ne pas changer">
+                <small class="form-text text-muted">Laissez vide pour conserver le mot de passe actuel</small>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="confirmPassword" class="form-label">
+                  Confirmer le mot de passe
+                </label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmPassword" 
+                  formControlName="confirmPassword"
+                  [class.is-invalid]="userForm.hasError('mismatch')"
+                  placeholder="••••••••">
+                <div *ngIf="userForm.hasError('mismatch')" class="invalid-feedback d-block">
+                  Les mots de passe ne correspondent pas
+                </div>
+              </div>
+            </div>
+
+            <!-- Rôle -->
+            <div class="mb-3">
+              <label for="role" class="form-label">
+                Rôle <span class="text-danger">*</span>
+              </label>
+              <select 
+                class="form-select" 
+                id="role" 
+                formControlName="role"
+                [class.is-invalid]="f['role'].invalid && f['role'].touched">
+                <option *ngFor="let role of roles" [value]="role.value">
+                  {{ role.label }}
+                </option>
+              </select>
+              <div *ngIf="f['role'].invalid && f['role'].touched" class="invalid-feedback">
+                Le rôle est requis
+              </div>
+            </div>
+
+            <!-- Téléphone -->
+            <div class="mb-3">
+              <label for="phone" class="form-label">Téléphone</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                id="phone" 
+                formControlName="phone"
+                placeholder="+212 600 000 000">
+            </div>
+
+            <!-- Adresse -->
+            <div class="mb-4">
+              <label for="address" class="form-label">Adresse</label>
+              <textarea 
+                class="form-control" 
+                id="address" 
+                formControlName="address"
+                rows="2"
+                placeholder="Votre adresse complète"></textarea>
+            </div>
+
+            <!-- Boutons -->
+            <div class="d-flex justify-content-between">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                (click)="onCancel()"
+                [disabled]="loading">
+                <i class="fas fa-times me-1"></i> Annuler
+              </button>
+              
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="userForm.invalid || loading">
+                <span *ngIf="!loading">
+                  <i class="fas fa-save me-1"></i>{{ getButtonText() }}
+                </span>
+                <span *ngIf="loading">
+                  <i class="fas fa-spinner fa-spin me-1"></i>
+                  {{ isEditMode ? 'Mise à jour...' : 'Création...' }}
+                </span>
+              </button>
+            </div>
+
+            <!-- Informations -->
+            <div class="mt-4 pt-3 border-top">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Les champs marqués d'un <span class="text-danger">*</span> sont obligatoires.
+                <span *ngIf="isEditMode"> En mode édition, les champs mot de passe sont optionnels.</span>
+              </small>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Aide rapide -->
+      <div class="card mt-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Aide rapide</h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2">
+              <i class="fas fa-user-md text-primary me-2"></i>
+              <strong>Médecin :</strong> Accès à l'analyse d'images et aux dossiers patients
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-user-injured text-success me-2"></i>
+              <strong>Patient :</strong> Consultation de son dossier et prise de rendez-vous
+            </li>
+            <li>
+              <i class="fas fa-user-shield text-danger me-2"></i>
+              <strong>Administrateur :</strong> Gestion complète du système et des utilisateurs
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,216 @@
+<div class="container-fluid mt-3">
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0">
+              <i class="fas fa-calendar-alt me-2"></i>Mes Rendez-vous
+            </h4>
+            <small class="opacity-75">
+              Gestion de vos rendez-vous médicaux
+            </small>
+          </div>
+          <div>
+            <button class="btn btn-light btn-sm" routerLink="/patient/dashboard">
+              <i class="fas fa-arrow-left me-1"></i> Retour
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filtrer par statut</h6>
+          <button class="btn btn-sm btn-primary" (click)="toggleNewForm()">
+            <i class="fas fa-plus me-1"></i>Nouveau RDV
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary" 
+                    [class.active]="filterStatus === 'upcoming'"
+                    (click)="filterStatus = 'upcoming'; onFilterChange()">
+              À venir
+            </button>
+            <button type="button" class="btn btn-outline-primary" 
+                    [class.active]="filterStatus === 'all'"
+                    (click)="filterStatus = 'all'; onFilterChange()">
+              Tous
+            </button>
+            <button type="button" class="btn btn-outline-primary" 
+                    [class.active]="filterStatus === 'past'"
+                    (click)="filterStatus = 'past'; onFilterChange()">
+              Passés
+            </button>
+            <button type="button" class="btn btn-outline-primary" 
+                    [class.active]="filterStatus === 'cancelled'"
+                    (click)="filterStatus = 'cancelled'; onFilterChange()">
+              Annulés
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire nouveau rendez-vous -->
+  <div *ngIf="showNewForm" class="row mb-4">
+    <div class="col-12">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-calendar-plus me-2"></i>Prendre un nouveau rendez-vous
+          </h6>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="scheduleAppointment()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Médecin</label>
+                <select class="form-select" [(ngModel)]="newAppointment.doctorName" name="doctor" required>
+                  <option value="Dr. Jean Martin">Dr. Jean Martin - Cardiologue</option>
+                  <option value="Dr. Ahmed Benali">Dr. Ahmed Benali - Généraliste</option>
+                  <option value="Dr. Fatima Zahra">Dr. Fatima Zahra - Endocrinologue</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" 
+                       [value]="getDateForInput()"
+                       (change)="onDateChange($event)" 
+                       name="date" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Heure</label>
+                <select class="form-select" [(ngModel)]="newAppointment.time" name="time" required>
+                  <option value="09:00">09:00</option>
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="15:00">15:00</option>
+                  <option value="16:00">16:00</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Motif de la consultation</label>
+                <textarea class="form-control" [(ngModel)]="newAppointment.reason" 
+                          name="reason" rows="2" required
+                          placeholder="Décrivez brièvement la raison de votre consultation"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Lieu</label>
+                <input type="text" class="form-control" [(ngModel)]="newAppointment.location" 
+                       name="location" required>
+              </div>
+              <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="button" class="btn btn-secondary" (click)="toggleNewForm()">
+                    Annuler
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-calendar-check me-1"></i>Planifier le rendez-vous
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des rendez-vous -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">
+            <i class="fas fa-list me-1"></i>
+            Rendez-vous ({{ filteredAppointments.length }})
+          </h6>
+          <div class="text-muted small">
+            {{ filterStatus === 'upcoming' ? 'À venir' : 
+               filterStatus === 'past' ? 'Passés' : 
+               filterStatus === 'cancelled' ? 'Annulés' : 'Tous' }}
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Chargement des rendez-vous...</p>
+          </div>
+
+          <div *ngIf="!loading && filteredAppointments.length === 0" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucun rendez-vous trouvé</p>
+            <button class="btn btn-sm btn-primary" (click)="toggleNewForm()">
+              <i class="fas fa-plus me-1"></i>Prendre un rendez-vous
+            </button>
+          </div>
+
+          <div *ngIf="!loading && filteredAppointments.length > 0">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Médecin</th>
+                    <th>Date & Heure</th>
+                    <th>Motif</th>
+                    <th>Lieu</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let appointment of filteredAppointments">
+                    <td>
+                      <strong>{{ appointment.doctorName }}</strong>
+                    </td>
+                    <td>
+                      <div>{{ formatDate(appointment.date) }}</div>
+                      <small class="text-muted">{{ appointment.time }} ({{ appointment.duration }} min)</small>
+                    </td>
+                    <td>{{ appointment.reason }}</td>
+                    <td>
+                      <small>{{ appointment.location }}</small>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="getStatusClass(appointment.status)">
+                        {{ getStatusText(appointment.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" title="Détails" [disabled]="true">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button *ngIf="appointment.status === 'SCHEDULED' || appointment.status === 'CONFIRMED'" 
+                                class="btn btn-outline-danger" 
+                                title="Annuler"
+                                (click)="cancelAppointment(appointment)">
+                          <i class="fas fa-times"></i>
+                        </button>
+                        <button *ngIf="appointment.status === 'SCHEDULED'" 
+                                class="btn btn-outline-success" 
+                                title="Confirmer" [disabled]="true">
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

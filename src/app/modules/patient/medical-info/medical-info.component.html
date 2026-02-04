@@ -1,0 +1,290 @@
+<div class="container-fluid mt-3">
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0">
+              <i class="fas fa-file-medical me-2"></i>Dossier Médical
+            </h4>
+            <small class="opacity-75">
+              Historique complet des consultations, résultats et prescriptions
+            </small>
+          </div>
+          <div>
+            <button class="btn btn-light btn-sm" routerLink="/patient/dashboard">
+              <i class="fas fa-arrow-left me-1"></i> Retour
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <ul class="nav nav-tabs" id="medicalTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" [class.active]="activeTab === 'records'" 
+                      (click)="setActiveTab('records')">
+                <i class="fas fa-history me-1"></i> Consultations
+                <span class="badge bg-secondary ms-1">{{ medicalRecords.length }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" [class.active]="activeTab === 'lab'" 
+                      (click)="setActiveTab('lab')">
+                <i class="fas fa-flask me-1"></i> Résultats Labo
+                <span class="badge bg-secondary ms-1">{{ labResults.length }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" [class.active]="activeTab === 'prescriptions'" 
+                      (click)="setActiveTab('prescriptions')">
+                <i class="fas fa-prescription me-1"></i> Prescriptions
+                <span class="badge bg-secondary ms-1">{{ prescriptions.length }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="row">
+    <div class="col-12">
+      <!-- Onglet Consultations -->
+      <div *ngIf="activeTab === 'records'" class="tab-content">
+        <div class="card">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-clipboard-list me-1"></i>Historique des consultations
+            </h6>
+            <button class="btn btn-sm btn-outline-primary" (click)="exportMedicalHistory()">
+              <i class="fas fa-download me-1"></i>Exporter
+            </button>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2 text-muted">Chargement des consultations...</p>
+            </div>
+
+            <div *ngIf="!loading && medicalRecords.length === 0" class="text-center py-5">
+              <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+              <p class="text-muted">Aucune consultation enregistrée</p>
+            </div>
+
+            <div *ngIf="!loading && medicalRecords.length > 0">
+              <div *ngFor="let record of medicalRecords" class="mb-4 pb-4 border-bottom">
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h5 class="mb-1">{{ record.diagnosis }}</h5>
+                        <p class="text-muted mb-2">
+                          <i class="fas fa-user-md me-1"></i>
+                          {{ record.doctorName }}
+                        </p>
+                      </div>
+                      <div class="text-end">
+                        <span class="badge bg-primary">
+                          {{ record.date | date:'dd/MM/yyyy' }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <h6 class="text-muted">Symptômes rapportés :</h6>
+                      <p class="mb-2">{{ record.symptoms }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                      <h6 class="text-muted">Traitement prescrit :</h6>
+                      <p class="mb-2">{{ record.treatment }}</p>
+                    </div>
+
+                    <div *ngIf="record.notes">
+                      <h6 class="text-muted">Notes du médecin :</h6>
+                      <p class="mb-0">{{ record.notes }}</p>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div *ngIf="record.attachments && record.attachments.length > 0" class="mb-3">
+                      <h6 class="text-muted">Documents joints :</h6>
+                      <div class="list-group">
+                        <a *ngFor="let file of record.attachments" 
+                           href="javascript:void(0)" 
+                           class="list-group-item list-group-item-action"
+                           (click)="downloadAttachment(file)">
+                          <i class="fas fa-paperclip me-2"></i>
+                          {{ file }}
+                          <i class="fas fa-download float-end mt-1"></i>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                      <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Cette consultation a été enregistrée le 
+                        {{ record.date | date:'dd/MM/yyyy' }}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglet Résultats Labo -->
+      <div *ngIf="activeTab === 'lab'" class="tab-content">
+        <div class="card">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">
+              <i class="fas fa-chart-line me-1"></i>Résultats de laboratoire
+            </h6>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2 text-muted">Chargement des résultats...</p>
+            </div>
+
+            <div *ngIf="!loading && labResults.length === 0" class="text-center py-5">
+              <i class="fas fa-flask fa-3x text-muted mb-3"></i>
+              <p class="text-muted">Aucun résultat de laboratoire disponible</p>
+            </div>
+
+            <div *ngIf="!loading && labResults.length > 0" class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Test</th>
+                    <th>Date</th>
+                    <th>Résultat</th>
+                    <th>Plage normale</th>
+                    <th>Laboratoire</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let result of labResults">
+                    <td>
+                      <strong>{{ result.testName }}</strong>
+                    </td>
+                    <td>{{ result.testDate | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <span class="fw-bold">{{ result.result }} {{ result.unit }}</span>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ result.normalRange }}</small>
+                    </td>
+                    <td>{{ result.labName }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="getLabStatusClass(result.status)">
+                        {{ getLabStatusText(result.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglet Prescriptions -->
+      <div *ngIf="activeTab === 'prescriptions'" class="tab-content">
+        <div class="card">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">
+              <i class="fas fa-pills me-1"></i>Historique des prescriptions
+            </h6>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2 text-muted">Chargement des prescriptions...</p>
+            </div>
+
+            <div *ngIf="!loading && prescriptions.length === 0" class="text-center py-5">
+              <i class="fas fa-prescription-bottle fa-3x text-muted mb-3"></i>
+              <p class="text-muted">Aucune prescription disponible</p>
+            </div>
+
+            <div *ngIf="!loading && prescriptions.length > 0">
+              <div class="row">
+                <div *ngFor="let prescription of prescriptions" class="col-md-6 mb-4">
+                  <div class="card h-100 border" [ngClass]="{
+                    'border-success': prescription.status === 'ACTIVE',
+                    'border-secondary': prescription.status === 'COMPLETED',
+                    'border-danger': prescription.status === 'STOPPED'
+                  }">
+                    <div class="card-header">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{{ prescription.medication }}</h6>
+                        <span class="badge" [ngClass]="getStatusClass(prescription.status)">
+                          {{ getStatusText(prescription.status) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <table class="table table-sm table-borderless">
+                          <tr>
+                            <td class="text-muted" style="width: 120px;">Posologie :</td>
+                            <td>{{ prescription.dosage }}</td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Fréquence :</td>
+                            <td>{{ prescription.frequency }}</td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Durée :</td>
+                            <td>{{ prescription.duration }}</td>
+                          </tr>
+                          <tr>
+                            <td class="text-muted">Prescrit par :</td>
+                            <td>{{ prescription.prescribedBy }}</td>
+                          </tr>
+                        </table>
+                      </div>
+                      
+                      <div class="row">
+                        <div class="col-6">
+                          <small class="text-muted">Début :</small><br>
+                          <strong>{{ prescription.startDate | date:'dd/MM/yyyy' }}</strong>
+                        </div>
+                        <div class="col-6">
+                          <small class="text-muted">Fin :</small><br>
+                          <strong>{{ prescription.endDate | date:'dd/MM/yyyy' }}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div *ngIf="prescription.status === 'ACTIVE'" class="card-footer bg-light">
+                      <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-success" [style.width]="getPrescriptionProgress(prescription) + '%'"></div>
+                      </div>
+                      <small class="text-muted mt-1 d-block">
+                        Progression du traitement
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

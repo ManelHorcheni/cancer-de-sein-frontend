@@ -8,7 +8,7 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZonelessChangeDetection(), // Mode sans Zone.js
+    provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(
       withFetch(),

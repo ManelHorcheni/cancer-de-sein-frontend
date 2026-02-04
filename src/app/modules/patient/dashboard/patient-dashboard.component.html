@@ -1,0 +1,320 @@
+<div class="container-fluid mt-3">
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0">
+              <i class="fas fa-user-injured me-2"></i>Dashboard Patient
+            </h4>
+            <small class="opacity-75">
+              Bienvenue {{ currentUser?.firstName }} {{ currentUser?.lastName }}
+            </small>
+          </div>
+          <div>
+            <button class="btn btn-light btn-sm me-2" (click)="refresh()" [disabled]="loading">
+              <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Actualiser
+            </button>
+            <button class="btn btn-outline-light btn-sm" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card border-left-primary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted text-uppercase small">Dossiers médicaux</div>
+              <div class="h3 mb-0">{{ stats.totalRecords || 0 }}</div>
+            </div>
+            <div class="text-primary">
+              <i class="fas fa-folder fa-2x"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              <i class="fas fa-history me-1"></i>
+              Historique complet
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card border-left-warning h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted text-uppercase small">Recommandations en attente</div>
+              <div class="h3 mb-0">{{ stats.pendingRecommendations || 0 }}</div>
+            </div>
+            <div class="text-warning">
+              <i class="fas fa-bell fa-2x"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              À compléter
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card border-left-success h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted text-uppercase small">Rendez-vous à venir</div>
+              <div class="h3 mb-0">{{ stats.upcomingAppointments || 0 }}</div>
+            </div>
+            <div class="text-success">
+              <i class="fas fa-calendar-check fa-2x"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              <i class="fas fa-clock me-1"></i>
+              À planifier
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card border-left-danger h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted text-uppercase small">Résultats anormaux</div>
+              <div class="h3 mb-0">{{ stats.abnormalResults || 0 }}</div>
+            </div>
+            <div class="text-danger">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              <i class="fas fa-flask me-1"></i>
+              Nécessite attention
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="row">
+    <!-- Colonne gauche : Recommandations -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-lightbulb me-1"></i>Recommandations récentes
+          </h6>
+          <button class="btn btn-sm btn-primary" (click)="viewDetails('recommendations')">
+            Voir toutes
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Chargement des recommandations...</p>
+          </div>
+
+          <div *ngIf="!loading && recommendations.length === 0" class="text-center py-4">
+            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune recommandation en attente</p>
+          </div>
+
+          <div *ngIf="!loading && recommendations.length > 0">
+            <div *ngFor="let rec of recommendations" class="mb-3 pb-3 border-bottom">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center mb-1">
+                    <span class="badge me-2" [ngClass]="getPriorityClass(rec.priority)">
+                      {{ getPriorityText(rec.priority) }}
+                    </span>
+                    <span class="badge bg-info me-2">
+                      {{ rec.type === 'DIET' ? 'Régime' : 
+                         rec.type === 'EXERCISE' ? 'Exercice' :
+                         rec.type === 'LIFESTYLE' ? 'Mode de vie' : 'Suivi' }}
+                    </span>
+                    <span *ngIf="rec.source === 'AI'" class="badge bg-secondary">
+                      <i class="fas fa-robot me-1"></i>IA
+                    </span>
+                  </div>
+                  <h6 class="mb-1">{{ rec.title }}</h6>
+                  <p class="text-muted small mb-2">{{ rec.description }}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="far fa-calendar me-1"></i>
+                      Échéance: {{ rec.dueDate | date:'dd/MM/yyyy' }}
+                    </small>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch"
+                             [checked]="rec.completed"
+                             (change)="toggleRecommendationStatus(rec)">
+                      <label class="form-check-label small">
+                        {{ rec.completed ? 'Terminée' : 'À faire' }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : Rendez-vous & Résultats -->
+    <div class="col-lg-6 mb-4">
+      <!-- Rendez-vous à venir -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-calendar-alt me-1"></i>Rendez-vous à venir
+          </h6>
+          <button class="btn btn-sm btn-primary" (click)="viewDetails('appointments')">
+            Voir tous
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          </div>
+
+          <div *ngIf="!loading && upcomingAppointments.length === 0" class="text-center py-3">
+            <p class="text-muted mb-0">Aucun rendez-vous à venir</p>
+          </div>
+
+          <div *ngIf="!loading && upcomingAppointments.length > 0">
+            <div *ngFor="let app of upcomingAppointments" class="mb-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0">{{ app.doctorName }}</h6>
+                  <small class="text-muted">{{ app.reason }}</small>
+                </div>
+                <div class="text-end">
+                  <div class="text-primary fw-bold">
+                    {{ app.date | date:'dd/MM/yyyy' }} à {{ app.time }}
+                  </div>
+                  <small class="text-muted">{{ app.location }}</small>
+                </div>
+              </div>
+              <div class="mt-2">
+                <span class="badge" [ngClass]="{
+                  'bg-warning': app.status === 'SCHEDULED',
+                  'bg-success': app.status === 'CONFIRMED'
+                }">
+                  {{ app.status === 'SCHEDULED' ? 'Planifié' : 'Confirmé' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résultats de labo récents -->
+      <div class="card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-flask me-1"></i>Résultats récents
+          </h6>
+          <button class="btn btn-sm btn-primary" (click)="viewDetails('medical')">
+            Voir tous
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          </div>
+
+          <div *ngIf="!loading && recentLabResults.length === 0" class="text-center py-3">
+            <p class="text-muted mb-0">Aucun résultat disponible</p>
+          </div>
+
+          <div *ngIf="!loading && recentLabResults.length > 0">
+            <div *ngFor="let result of recentLabResults" class="mb-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0">{{ result.testName }}</h6>
+                  <small class="text-muted">
+                    {{ result.testDate | date:'dd/MM/yyyy' }} • {{ result.labName }}
+                  </small>
+                </div>
+                <div class="text-end">
+                  <div class="h5 mb-0">
+                    {{ result.result }} {{ result.unit }}
+                  </div>
+                  <small class="text-muted">
+                    Normal: {{ result.normalRange }}
+                  </small>
+                </div>
+              </div>
+              <div class="mt-2">
+                <span class="badge" [ngClass]="getStatusClass(result.status)">
+                  {{ result.status === 'NORMAL' ? 'Normal' : 
+                     result.status === 'ABNORMAL' ? 'Anormal' : 'Critique' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Actions rapides</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 col-6 mb-3">
+              <button class="btn btn-primary w-100" (click)="viewDetails('medical')">
+                <i class="fas fa-file-medical me-1"></i>
+                Dossier médical
+              </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <button class="btn btn-success w-100" (click)="viewDetails('recommendations')">
+                <i class="fas fa-list-check me-1"></i>
+                Mes recommandations
+              </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <button class="btn btn-info w-100" (click)="viewDetails('appointments')">
+                <i class="fas fa-calendar-plus me-1"></i>
+                Prendre RDV
+              </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <button class="btn btn-warning w-100" routerLink="/patient/messages">
+                <i class="fas fa-comment-medical me-1"></i>
+                Contacter médecin
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
