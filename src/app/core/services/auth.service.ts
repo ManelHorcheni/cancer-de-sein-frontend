@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-//import { environment } from '../../../environments/environment.prod';
 
 export interface User {
   id: number;
@@ -33,9 +32,9 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = environment.apiUrl; // Vaudra "/api" en dev
-    private currentUserSubject = new BehaviorSubject<User | null>(null);
-    public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = environment.apiUrl;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -44,44 +43,35 @@ export class AuthService {
     this.loadStoredUser();
   }
 
+  // ✅ CORRECTION ICI : Ajouter tap() pour mettre à jour immédiatement
   login(email: string, password: string): Observable<LoginResponse> {
-  // AVEC PROXY : utilisez juste /api/auth/login
-  return this.http.post<LoginResponse>(
-    `/api/auth/login`,  // ← SEULEMENT /api/auth/login (pas de apiUrl)
-    { email, password }
-  );
-}
-
-  /* login(email: string, password: string): Observable<LoginResponse> {
-    console.log('URL de login:', `${this.apiUrl}/auth/login`);
-    
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { 
-      email, 
-      password 
-    }).pipe(
-      map(response => {
-        console.log('Réponse login:', response);
+    return this.http.post<LoginResponse>(
+      `/api/auth/login`,
+      { email, password }
+    ).pipe(
+      tap(response => {
+        // Mettre à jour IMMÉDIATEMENT après la réponse
         this.storeAuthData(response);
-        return response;
+        console.log('AuthService: Données stockées, rôle:', response.role);
       }),
       catchError(error => {
-        console.error('Erreur complète:', error);
+        console.error('Erreur login:', error);
         return throwError(() => error);
       })
     );
-  } */
+  }
 
   register(userData: any): Observable<User> {
-  return this.http.post<User>(
-    `/api/auth/register`,  // ← SEULEMENT /api/auth/register
-    userData,
-    {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      })
-    }
-  );
-}
+    return this.http.post<User>(
+      `/api/auth/register`,
+      userData,
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json'
+        })
+      }
+    );
+  }
 
   logout(): void {
     localStorage.removeItem('access_token');
@@ -93,11 +83,11 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<User> {
-  return this.http.get<User>(`/api/auth/me`);  // ← Sans apiUrl
-}
+    return this.http.get<User>(`/api/auth/me`);
+  }
 
   getUsers(): Observable<User[]> {
-  return this.http.get<User[]>(`/api/auth/users`);  // ← Sans apiUrl
+    return this.http.get<User[]>(`/api/auth/users`);
   }
 
   updateUser(id: number, userData: any): Observable<User> {
@@ -125,62 +115,137 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
+  // ✅ CORRECTION CRITIQUE ICI : Améliorer getUserRole()
   getUserRole(): string | null {
-    const user = this.currentUserSubject.value;
-    return user ? user.role : localStorage.getItem('user_role');
+    // 1. Vérifier d'abord le BehaviorSubject (le plus récent)
+    const currentUser = this.currentUserSubject.value;
+    if (currentUser && currentUser.role) {
+      console.log('AuthService: Rôle depuis currentUserSubject:', currentUser.role);
+      return currentUser.role;
+    }
+    
+    // 2. Vérifier dans localStorage current_user
+    const userJson = localStorage.getItem('current_user');
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        if (user && user.role) {
+          console.log('AuthService: Rôle depuis localStorage current_user:', user.role);
+          return user.role;
+        }
+      } catch (e) {
+        console.error('Erreur parsing current_user:', e);
+      }
+    }
+    
+    // 3. Vérifier dans localStorage user_role (ancienne méthode)
+    const roleFromStorage = localStorage.getItem('user_role');
+    if (roleFromStorage) {
+      console.log('AuthService: Rôle depuis localStorage user_role:', roleFromStorage);
+      return roleFromStorage;
+    }
+    
+    console.log('AuthService: Aucun rôle trouvé');
+    return null;
   }
 
+  // ✅ CORRECTION : Ajouter des logs pour le débogage
   isAdmin(): boolean {
-    return this.getUserRole() === 'ADMIN';
+    const role = this.getUserRole();
+    const isAdmin = role === 'ADMIN';
+    console.log('AuthService: isAdmin?', isAdmin, 'role:', role);
+    return isAdmin;
   }
 
   isDoctor(): boolean {
-    return this.getUserRole() === 'DOCTOR';
+    const role = this.getUserRole();
+    const isDoctor = role === 'DOCTOR';
+    console.log('AuthService: isDoctor?', isDoctor, 'role:', role);
+    return isDoctor;
   }
 
   isPatient(): boolean {
-    return this.getUserRole() === 'PATIENT';
+    const role = this.getUserRole();
+    const isPatient = role === 'PATIENT';
+    console.log('AuthService: isPatient?', isPatient, 'role:', role);
+    return isPatient;
   }
 
+  // ✅ CORRECTION : storeAuthData avec logs
   private storeAuthData(response: LoginResponse): void {
+    console.log('AuthService: Stockage des données d\'auth...');
+    
     localStorage.setItem('access_token', response.accessToken);
     localStorage.setItem('user_role', response.role);
     localStorage.setItem('user_email', response.email);
     
     // Stocker les infos utilisateur de base
-    const userBasicInfo = {
+    const userBasicInfo: User = {
+      id: 0, // Temporaire, sera mis à jour par getCurrentUser()
       firstName: response.firstName,
       lastName: response.lastName,
       email: response.email,
-      role: response.role
+      role: response.role,
+      enabled: true,
+      createdAt: new Date()
     };
+    
     localStorage.setItem('current_user', JSON.stringify(userBasicInfo));
-
-    // Mettre à jour le BehaviorSubject
-    this.currentUserSubject.next(userBasicInfo as User);
+    
+    // Mettre à jour IMMÉDIATEMENT le BehaviorSubject
+    this.currentUserSubject.next(userBasicInfo);
+    
+    console.log('AuthService: Données stockées avec succès');
+    console.log('AuthService: Rôle stocké:', response.role);
+    console.log('AuthService: currentUserSubject:', this.currentUserSubject.value);
   }
 
   private loadStoredUser(): void {
     const userJson = localStorage.getItem('current_user');
     if (userJson) {
       try {
-        this.currentUserSubject.next(JSON.parse(userJson));
+        const user = JSON.parse(userJson);
+        this.currentUserSubject.next(user);
+        console.log('AuthService: Utilisateur chargé depuis localStorage:', user);
       } catch (e) {
-        console.error('Erreur parsing user:', e);
+        console.error('AuthService: Erreur parsing user:', e);
       }
+    } else {
+      console.log('AuthService: Aucun utilisateur stocké trouvé');
     }
   }
 
-  private loadCurrentUser(): void {
-    this.getCurrentUser().subscribe({
-      next: (user) => {
-        this.currentUserSubject.next(user);
-        localStorage.setItem('current_user', JSON.stringify(user));
-      },
-      error: (error) => {
-        console.error('Erreur chargement user:', error);
-        // Ne pas déconnecter automatiquement en cas d'erreur
-      }
-    });
+  // ✅ NOUVELLE MÉTHODE : Charger l'utilisateur complet depuis l'API
+  loadCurrentUser(): Observable<User> {
+    return this.getCurrentUser().pipe(
+      tap(user => {
+        // Fusionner avec les données de base
+        const currentUser = this.currentUserSubject.value;
+        const updatedUser = {
+          ...currentUser,
+          ...user,
+          role: user.role || (currentUser ? currentUser.role : 'PATIENT')
+        };
+        
+        this.currentUserSubject.next(updatedUser);
+        localStorage.setItem('current_user', JSON.stringify(updatedUser));
+        console.log('AuthService: Utilisateur complet chargé:', updatedUser);
+      }),
+      catchError(error => {
+        console.error('AuthService: Erreur chargement utilisateur:', error);
+        // Ne pas déconnecter, garder les données de base
+        return throwError(() => error);
+      })
+    );
+  }
+  
+  // ✅ MÉTHODE UTILE : Vérifier et mettre à jour le statut d'authentification
+  checkAuthStatus(): void {
+    if (this.isLoggedIn()) {
+      this.loadCurrentUser().subscribe({
+        next: () => console.log('AuthService: Statut vérifié et mis à jour'),
+        error: () => console.log('AuthService: Utilisation des données stockées')
+      });
+    }
   }
 }
